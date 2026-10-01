@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vendas Hoje</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Bebas+Neue&display=swap">
+<style>
+/* Layout: faixa laranja com total do dia → 3 colunas (métricas · gráfico · top 5) */
+:root{
+  color-scheme:light;
+  --brand:#EE4D2D; --brand-dark:#D0011B; --brand-pill:#C1361B;
+  --bg:#F5F5F7; --card:#FFFFFF; --fg:#333333; --muted:#757575; --line:#EAEAEA;
+  --today:#EE4D2D; --today-fill:rgba(238,77,45,.12); --yday:#A8E3DC; --link:#2673DD;
+  --font:"Roboto",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+  --num:"Bebas Neue","Roboto Condensed","Arial Narrow",sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;margin:0}
+button{font-family:inherit;color:inherit}
+:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+/* Hero */
+.hero{position:relative;background:var(--brand);color:#fff;padding:0 16px 96px}
+.bar{max-width:1440px;margin:0 auto;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding-block:24px}
+.bar-l{display:flex;align-items:center;gap:28px;font-size:13px;min-width:0}
+.crumb{display:flex;align-items:center;gap:8px;white-space:nowrap;color:#fff;text-decoration:none}
+.crumb-ic{width:22px;height:22px;border-radius:50%;background:#fff;color:var(--brand);display:grid;place-items:center}
+.shop{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.shop-av{width:22px;height:22px;border-radius:50%;background:#111;color:#fff;font-size:8px;display:grid;place-items:center;font-weight:700}
+.center{display:flex;align-items:center;gap:18px}
+.center::before,.center::after{content:"";width:104px;height:1.5px;background:rgba(255,255,255,.85)}
+.logo{position:relative;display:flex;align-items:center;gap:8px;background:none;border:0;cursor:pointer;color:#fff;padding:2px 4px;border-radius:6px;min-height:44px}
+.logo:hover{background:rgba(255,255,255,.1)}
+.logo img{height:46px;max-width:200px;object-fit:contain;display:block;transform:translateY(-7px)}
+.logo-txt{font-size:26px;font-weight:500;letter-spacing:.2px;white-space:nowrap}
+.logo-edit{position:absolute;right:-8px;top:-6px;width:18px;height:18px;border-radius:50%;background:#fff;color:var(--brand);display:grid;place-items:center;opacity:0;transition:opacity .15s}
+.logo:hover .logo-edit,.logo:focus-visible .logo-edit{opacity:1}
+.bar-r{display:flex;align-items:center;justify-content:flex-end;gap:28px}
+.ptype{display:flex;align-items:center;gap:14px;border:1px solid rgba(255,255,255,.9);border-radius:2px;padding:4px 10px;font-size:11px;white-space:nowrap;position:relative}
+.ptype select{appearance:none;background:transparent;border:0;color:#fff;font:inherit;padding-right:16px;cursor:pointer}
+.ptype select option{color:#333}
+.ptype .chev{position:absolute;right:10px;pointer-events:none}
+.ibtn{background:none;border:0;color:#fff;cursor:pointer;padding:2px;display:grid;place-items:center}
+
+.title{text-align:center;margin-top:22px}
+.title h1{margin:0;font-size:30px;font-weight:500}
+.stamp{display:inline-block;margin-top:6px;background:var(--brand-pill);border-radius:2px;padding:4px 18px;font-size:15px;font-weight:500;font-variant-numeric:tabular-nums}
+.total{position:absolute;left:50%;transform:translateX(-50%);bottom:-35px;width:min(616px,calc(100% - 32px));background:#fff;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.12);display:flex;align-items:baseline;justify-content:center;gap:22px;padding:14px 16px 10px;color:var(--brand);font-family:var(--num);font-weight:700;z-index:2}
+.total .cur{font-size:58px;letter-spacing:1px}
+.total .val{font-size:118px;line-height:.9;letter-spacing:1px;font-variant-numeric:tabular-nums}
+
+/* Grid */
+.grid{max-width:1436px;margin:0 auto;padding:58px 16px 40px;display:grid;grid-template-columns:minmax(0,342px) minmax(0,1fr) minmax(0,388px);gap:12px}
+.card{background:var(--card);box-shadow:0 1px 4px rgba(0,0,0,.06);min-width:0}
+.card h2{margin:0;font-size:18px;font-weight:500;padding:24px 20px 24px}
+
+.metrics{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
+.metric{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;min-height:129px;padding:12px 8px;border-bottom:1px solid var(--line);text-align:center}
+.metric:nth-child(odd){border-right:1px solid var(--line)}
+.metric:nth-last-child(-n+2){border-bottom:0}
+.ml{color:var(--brand);font-size:15.5px;line-height:1.25}
+.mv{font-size:17px;font-variant-numeric:tabular-nums}
+
+.chart-card h2{font-weight:400;font-size:19px}
+.chart-head{display:flex;justify-content:space-between;align-items:center;padding:0 22px 0 20px;font-size:12.5px;gap:12px;flex-wrap:wrap}
+.legend{display:flex;align-items:center;gap:18px;font-size:14px}
+.legend span{display:flex;align-items:center;gap:8px}
+.ln{width:20px;height:3px;border-radius:2px}
+.cal{color:var(--link);margin-left:-8px}
+.chart-box{position:relative;height:340px;padding:8px 18px 0 10px}
+.promo{margin:4px 16px 0;padding-bottom:22px;font-size:12px;color:var(--fg)}
+.promo a{color:var(--link);text-decoration:none}
+
+.top5{list-style:none;margin:0;padding:0 12px 20px}
+.top5 li{display:grid;grid-template-columns:28px 44px minmax(0,1fr) auto;align-items:center;gap:12px;padding:20px 10px 18px 20px;border-top:1px solid transparent}
+.top5 li:first-child{background:#F6F6F6}
+.top5 li+li{border-top:1px solid #F2F2F2}
+.pos{color:var(--brand);font-size:12px}
+.thumb{width:36px;height:36px;border-radius:3px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;color:#222;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:contain}
+.pname{font-size:13px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.price{color:var(--brand);font-size:11px;white-space:nowrap}
+
+/* Tooltip */
+.tip{position:absolute;pointer-events:none;background:#fff;border-radius:6px;box-shadow:0 4px 18px rgba(0,0,0,.14);padding:12px 16px;min-width:190px;opacity:0;transition:opacity .12s,left .12s,top .12s;z-index:3}
+.tip-t{color:var(--muted);font-size:12.5px;margin-bottom:8px}
+.tip-r{display:flex;align-items:center;gap:10px;font-size:14px;padding:3px 0}
+.tip-r b{margin-left:auto;padding-left:24px;font-weight:700;color:#111;font-variant-numeric:tabular-nums}
+
+@media (max-width:1150px){
+  .grid{grid-template-columns:1fr 1fr}
+  .chart-card{grid-column:1/-1;order:-1}
+  .bar{grid-template-columns:1fr auto}
+  .bar-l{display:none}
+}
+@media (max-width:720px){
+  .grid{grid-template-columns:1fr}
+  .center::before,.center::after{width:30px}
+  .bar{grid-template-columns:1fr}
+  .center{justify-content:center}
+  .bar-r{justify-content:center}
+  .total .val{font-size:76px}.total .cur{font-size:40px}
+  .chart-box{height:280px}
+}
+</style>
+</head>
+<body>
+
+
+<header class="hero">
+  <div class="bar">
+    <div class="bar-l">
+      <a class="crumb" href="#"><span class="crumb-ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 20h18M5 16l4-5 4 3 6-8"/></svg></span>Informações Gerenciais <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg></a>
+      <span class="shop"><span class="shop-av">KPS</span>keypassstore</span>
+    </div>
+    <div class="center">
+      <button class="logo" id="logoBtn" title="Clique para trocar a logo" aria-label="Trocar logo">
+        <img id="logoImg" alt="Logo" hidden>
+        <span class="logo-txt" id="logoTxt">Sua Logo</span>
+        <span class="logo-edit" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></span>
+      </button>
+      <input type="file" id="logoFile" accept="image/*" hidden>
+    </div>
+    <div class="bar-r">
+      <label class="ptype" for="ptype">Tipo de Pedido
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 .5c0 1.5-2.5 2-2.5 3.5M12 17h.01"/></svg>
+        <select id="ptype"><option>Produto Pago</option><option>Pedido Feito</option></select>
+        <svg class="chev" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 9l6 6 6-6"/></svg>
+      </label>
+      <button class="ibtn" aria-label="Imagem"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 16l5-5 4 4 3-3 6 6M15 8h.01"/></svg></button>
+      <button class="ibtn" id="fs" aria-label="Tela cheia"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5M4 4l5 5M20 4l-5 5M4 20l5-5M20 20l-5-5"/></svg></button>
+    </div>
+  </div>
+  <div class="title">
+    <h1>Vendas Hoje</h1>
+    <div class="stamp" id="clock">30/09/2026 18:12:35 (GMT-03)</div>
+  </div>
+  <div class="total"><span class="cur">R$</span><span class="val" id="total">1.785,00</span></div>
+</header>
+
+<main class="grid">
+  <section class="card">
+    <h2>Métricas Principais</h2>
+    <div class="metrics">
+      <div class="metric"><span class="ml">Visitantes</span><span class="mv">590</span></div>
+      <div class="metric"><span class="ml">Cliques Por Produto</span><span class="mv">640</span></div>
+      <div class="metric"><span class="ml">Pedidos</span><span class="mv">8</span></div>
+      <div class="metric"><span class="ml">Unidades</span><span class="mv">10</span></div>
+      <div class="metric"><span class="ml">Total de Compradores</span><span class="mv">8</span></div>
+      <div class="metric"><span class="ml">Taxa de Conversão de Pedidos</span><span class="mv">1,25%</span></div>
+    </div>
+  </section>
+
+  <section class="card chart-card">
+    <h2>Tendência de Vendas</h2>
+    <div class="chart-head">
+      <span>Vendas(R$)</span>
+      <div class="legend">
+        <span><i class="ln" style="background:var(--today)"></i>Hoje</span>
+        <span><i class="ln" style="background:var(--yday)"></i><span id="ydayLbl">29/09/2026</span></span>
+        <svg class="cal" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+      </div>
+    </div>
+    <div class="chart-box"><canvas id="chart" aria-label="Vendas por hora, hoje versus ontem"></canvas></div>
+  </section>
+
+  <section class="card">
+    <h2>Top 5 dos Produtos à Venda</h2>
+    <ol class="top5">
+      <li>
+        <span class="pos">1</span>
+        <span class="thumb"><img src="data:image/webp;base64,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" alt=""></span>
+        <span class="pname">Controle 8bitdo Ultimate 2 Preto</span>
+        <span class="price">R$700,00</span>
+      </li>
+      <li>
+        <span class="pos">2</span>
+        <span class="thumb"><img src="data:image/webp;base64,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" alt=""></span>
+        <span class="pname">Controle 8bitdo Ultimate 2 Roxo</span>
+        <span class="price">R$350,00</span>
+      </li>
+      <li>
+        <span class="pos">3</span>
+        <span class="thumb"><img src="data:image/webp;base64,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" alt=""></span>
+        <span class="pname">Fifine Dinâmico Am8 Preto</span>
+        <span class="price">R$329,00</span>
+      </li>
+      <li>
+        <span class="pos">4</span>
+        <span class="thumb" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="4" width="14" height="17" rx="2"/><rect x="8" y="8" width="8" height="2" fill="#fff"/><rect x="9" y="1.5" width="6" height="3" rx="1"/></svg></span>
+        <span class="pname">RetroScaler BlueRetro - Adaptador de Controle</span>
+        <span class="price">R$266,00</span>
+      </li>
+      <li>
+        <span class="pos">5</span>
+        <span class="thumb" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M5 5h14c2 0 3 2 3 5v6c0 2-1 3-3 3H5c-2 0-3-1-3-3v-6c0-3 1-5 3-5z"/><path d="M6 9h12" stroke="#fff" stroke-width="1.2"/></svg></span>
+        <span class="pname">Case Estojo Protetor e Rígido Para Controles</span>
+        <span class="price">R$140,00</span>
+      </li>
+    </ol>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// Logo editável (salva neste navegador)
+const lBtn=document.getElementById("logoBtn"),lFile=document.getElementById("logoFile"),lImg=document.getElementById("logoImg"),lTxt=document.getElementById("logoTxt");
+function setLogo(src){lImg.src=src;lImg.hidden=false;lTxt.hidden=true}
+try{const v=localStorage.getItem("logoHoje");if(v)setLogo(v)}catch(e){}
+lBtn.addEventListener("click",()=>lFile.click());
+lFile.addEventListener("change",()=>{const f=lFile.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{setLogo(r.result);try{localStorage.setItem("logoHoje",r.result)}catch(e){}};r.readAsDataURL(f)});
+
+// Relógio ao vivo no horário de Brasília
+const clock=document.getElementById("clock");
+const fmtBR=new Intl.DateTimeFormat("pt-BR",{timeZone:"America/Sao_Paulo",day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+function tick(){clock.textContent=fmtBR.format(new Date()).replace(",","")+" (GMT-03)"}
+tick();setInterval(tick,1000);
+// Data de ontem na legenda
+const ontemDt=new Date(Date.now()-864e5);
+document.getElementById("ydayLbl").textContent=new Intl.DateTimeFormat("pt-BR",{timeZone:"America/Sao_Paulo",day:"2-digit",month:"2-digit",year:"numeric"}).format(ontemDt);
+
+// Contagem animada do total
+const totalEl=document.getElementById("total"),alvo=1785;
+const dec=v=>v.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+if(!matchMedia("(prefers-reduced-motion: reduce)").matches){
+  const t0=performance.now(),d=1200;
+  (function step(now){const p=Math.min(1,(now-t0)/d),e=1-Math.pow(1-p,3);totalEl.textContent=dec(alvo*e);if(p<1)requestAnimationFrame(step)})(t0);
+}
+
+// Tela cheia
+document.getElementById("fs").addEventListener("click",()=>{
+  const el=document.documentElement;
+  (document.fullscreenElement?document.exitFullscreen():el.requestFullscreen?.())?.catch?.(()=>{});
+});
+
+// Gráfico (por hora)
+const horas=[...Array(24)].map((_,i)=>String(i).padStart(2,"0"));
+const hoje=[0,0,0,0,0,0,0,0,70,0,350,133,0,329,385,350,133,35,0,null,null,null,null,null];
+const ontem=[0,0,0,0,0,0,0,0,0,133,0,350,70,0,329,0,350,0,0,266,35,105,0,0];
+const brl=v=>"R$ "+dec(v);
+const crosshair={id:"crosshair",afterDatasetsDraw(c){
+  const a=c.tooltip?.getActiveElements?.();if(!a||!a.length)return;
+  const x=a[0].element.x,{top,bottom}=c.chartArea,ctx=c.ctx;
+  ctx.save();ctx.strokeStyle="#BDBDBD";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);ctx.stroke();ctx.restore();
+}};
+function tooltipHTML(ctx){
+  const {chart:c,tooltip:t}=ctx;
+  let el=c.canvas.parentNode.querySelector(".tip");
+  if(!el){el=document.createElement("div");el.className="tip";c.canvas.parentNode.appendChild(el)}
+  if(t.opacity===0){el.style.opacity=0;return}
+  el.innerHTML=`<div class="tip-t">${t.dataPoints[0].label}:00 · Vendas</div>`+t.dataPoints.map(d=>
+    `<div class="tip-r"><i class="ln" style="background:${d.dataset.borderColor}"></i><span>${d.dataset.label}</span><b>${brl(d.parsed.y)}</b></div>`).join("");
+  const box=c.canvas.parentNode,bw=box.clientWidth,tw=el.offsetWidth,th=el.offsetHeight;
+  let x=t.caretX+24; if(x+tw>bw-8)x=t.caretX-tw-6;
+  let y=Math.min(...t.dataPoints.map(d=>d.element.y))-th/2;
+  y=Math.max(4,Math.min(y,box.clientHeight-th-30));
+  el.style.left=x+"px";el.style.top=y+"px";el.style.opacity=1;
+}
+const ontemLbl=document.getElementById("ydayLbl").textContent;
+new Chart(document.getElementById("chart"),{
+  type:"line",plugins:[crosshair],
+  data:{labels:horas,datasets:[
+    {label:"Hoje",data:hoje,borderColor:"#EE4D2D",backgroundColor:"rgba(238,77,45,.12)",fill:"origin",borderWidth:2,tension:0,
+      pointRadius:c=>c.dataIndex===18?5:0,pointBackgroundColor:"#EE4D2D",pointBorderColor:"rgba(238,77,45,.25)",pointBorderWidth:c=>c.dataIndex===18?5:0,
+      pointHoverRadius:5,pointHoverBorderWidth:2,pointHoverBorderColor:"#fff",order:1},
+    {label:ontemLbl,data:ontem,borderColor:"#A8E3DC",backgroundColor:"#A8E3DC",borderWidth:1.5,tension:0,pointRadius:0,pointHoverRadius:5,pointHoverBorderWidth:2,pointHoverBorderColor:"#fff",order:2}
+  ]},
+  options:{
+    responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
+    plugins:{legend:{display:false},tooltip:{enabled:false,external:tooltipHTML}},
+    scales:{
+      x:{grid:{color:"#EDEDED",drawTicks:false},border:{display:false},
+        ticks:{color:"#333",padding:10,font:{family:"Roboto",size:14},autoSkip:false,callback:(v,i)=>i%2===0?horas[i]:""},
+        title:{display:false}},
+      y:{min:0,max:400,grid:{display:false},border:{color:"#DDD"},
+        ticks:{stepSize:80,color:"#333",padding:10,font:{family:"Roboto",size:14}}}
+    }
+  },
+});
+</script>
+
+</body>
+</html>
